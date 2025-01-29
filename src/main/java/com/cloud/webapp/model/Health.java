@@ -15,10 +15,9 @@ public class Health {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "check_id")
     private Long checkId;
 
-    @Column(name = "datetime", nullable = false, columnDefinition = "TIMESTAMP")
+    @Column(nullable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime datetime;
 
     public Health() {

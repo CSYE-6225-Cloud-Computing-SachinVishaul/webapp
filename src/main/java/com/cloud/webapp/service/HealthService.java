@@ -15,7 +15,7 @@ public class HealthService {
 	@Autowired
     private HealthDAO healthDao;
 
-    public boolean performHealthCheck() {
+    public boolean isDbConnected() {
         try {
         	healthDao.save(new Health(LocalDateTime.now()));
             return true;

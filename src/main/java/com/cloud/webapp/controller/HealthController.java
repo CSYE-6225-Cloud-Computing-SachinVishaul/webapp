@@ -3,15 +3,11 @@ package com.cloud.webapp.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.cloud.webapp.service.HealthService;
 
@@ -33,7 +29,7 @@ class HealthController {
         if (body != null && !body.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        if (healthService.performHealthCheck()) {
+        if (healthService.isDbConnected()) {
         	return ResponseEntity.status(HttpStatus.OK)
                     .header("Cache-Control", "no-cache")
                     .build();
