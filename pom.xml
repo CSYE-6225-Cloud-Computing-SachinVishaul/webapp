@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cloud</groupId>
-	<artifactId>assignmentOne</artifactId>
+	<artifactId>webapp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>assignmentOne</name>
+	<name>webapp</name>
 	<description>assignment1 solution</description>
 	<url/>
 	<licenses>
@@ -89,6 +89,46 @@
 			<artifactId>hibernate-validator</artifactId>
 			<version>8.0.0.Final</version>
 		</dependency>
+		<dependency>
+		    <groupId>io.github.cdimascio</groupId>
+		    <artifactId>dotenv-java</artifactId>
+		    <version>3.1.0</version>
+		</dependency>
+	    <dependency>
+	        <groupId>io.rest-assured</groupId>
+	        <artifactId>rest-assured</artifactId>
+	        <scope>test</scope>
+		</dependency>	
+	
+	    <dependency>
+	        <groupId>io.rest-assured</groupId>
+	        <artifactId>json-path</artifactId>
+	        <scope>test</scope>
+	    </dependency>
+	
+	    <dependency>
+	        <groupId>io.rest-assured</groupId>
+	        <artifactId>xml-path</artifactId>
+	        <scope>test</scope>
+	    </dependency>
+	
+	    <dependency>
+	        <groupId>org.hamcrest</groupId>
+	        <artifactId>hamcrest</artifactId>
+	        <scope>test</scope>
+	    </dependency>
+	
+	    <dependency>
+	        <groupId>org.junit.jupiter</groupId>
+	        <artifactId>junit-jupiter-api</artifactId>
+	        <scope>test</scope>
+	    </dependency>
+	
+	    <dependency>
+	        <groupId>org.junit.jupiter</groupId>
+	        <artifactId>junit-jupiter-engine</artifactId>
+	        <scope>test</scope>
+	    </dependency>
 		
 		
 	</dependencies>
