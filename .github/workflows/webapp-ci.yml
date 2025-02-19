@@ -2,9 +2,9 @@ name: Spring Boot CI
 
 on:
   pull_request:
-    paths:
-      - '**/*.java'
-      - '**/pom.xml'
+    branches:
+      - '*'
+
 
 jobs:
   build:

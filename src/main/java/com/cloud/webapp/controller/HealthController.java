@@ -19,7 +19,7 @@ class HealthController {
     @Autowired
     private HealthService healthService;
 
-    
+//controller functions    
     @GetMapping
     public ResponseEntity<Void> healthCheck(@RequestBody(required = false) String body, HttpServletRequest request) {
 
