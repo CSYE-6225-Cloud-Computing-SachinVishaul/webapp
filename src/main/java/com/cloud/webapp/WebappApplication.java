@@ -16,7 +16,8 @@ public class WebappApplication implements CommandLineRunner{
 	@Override
     public void run(String... args) throws Exception {
         // Load .env file
-        Dotenv dotenv = Dotenv.load();
+        // Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
     }
 }
