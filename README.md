@@ -11,6 +11,8 @@ This repository contains a Spring Boot web application along with a shell script
   - [Setup and Installation](#setup-and-installation)
     - [What the Script Does](#what-the-script-does)
     - [Running the Setup Script](#running-the-setup-script)
+  - [Continuous Integration](#continuous-integration)
+    - [Workflow Details](#workflow-details)
 
 ## Overview
 
@@ -68,3 +70,56 @@ The setup process is automated through a shell script named `script.sh` included
 
    ```bash
    sudo ./script.sh
+
+
+## Continuous Integration
+
+This project leverages GitHub Actions to ensure code quality and application stability through continuous integration. The CI workflow is defined in the `webapp-ci.yml` file and is automatically triggered on pull requests across all branches.
+
+### Workflow Details
+
+**Workflow Name:**  
+The CI workflow is named **Spring Boot CI**.
+
+**Trigger:**  
+The workflow runs on every pull request regardless of the branch, ensuring that all incoming changes are validated.
+
+**Build Environment:**
+
+- **Runner:**  
+  The job executes on the `ubuntu-latest` virtual environment.
+- **Java Setup:**  
+  Java 17 is configured using the Temurin distribution.
+
+**Database Service Configuration:**  
+A MySQL 8.0 service is set up to mimic a production-like environment:
+- **Container Image:**  
+  `mysql:8.0`
+- **Environment Variables:**
+  - `MYSQL_DATABASE` is set to `healthcheckdb`.
+  - `MYSQL_ROOT_PASSWORD` is securely provided via repository secrets.
+- **Port Mapping:**  
+  The container’s port 3306 is mapped to the host, making it accessible during the build.
+- **Health Check:**  
+  The service includes a health check command (`mysqladmin ping --silent`) with defined intervals, timeouts, and retries to ensure that the MySQL service is running properly.
+
+**Environment Variables for the Build:**  
+The workflow also defines environment variables for database connectivity:
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`  
+These are all sourced from repository secrets and are used by the application to connect to the MySQL service.
+
+**Build Steps:**
+
+1. **Checkout Code:**  
+   Retrieves the latest code from the repository.
+2. **Set Up Java 17:**  
+   Configures the environment with Java 17.
+3. **Cache Maven Packages:**  
+   Caches Maven dependencies to improve build performance.
+4. **Run Maven Tests:**  
+   Executes the test suite using Maven to validate the application’s functionality.
+
+This CI configuration helps catch issues early in the development process by running a complete test suite on every pull request, ensuring that only well-tested code is merged.
+
