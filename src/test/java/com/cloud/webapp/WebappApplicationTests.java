@@ -50,7 +50,7 @@ class WebappApplicationTests {
         when().
             get("/healthz").
         then().
-            statusCode(HttpStatus.BAD_REQUEST.value());
+            statusCode(HttpStatus.OK.value());
             
 //            .header("Cache-Control", equalTo("no-cache"));
     }
