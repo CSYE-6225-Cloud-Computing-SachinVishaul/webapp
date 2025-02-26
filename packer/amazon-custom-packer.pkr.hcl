@@ -59,11 +59,11 @@ variable "db_password" {
 }
 
 source "amazon-ebs" "ubuntu" {
-  region         = var.aws_region
-  source_ami     = var.source_ami  # Ensure this is Ubuntu 24.04 LTS or update accordingly
-  instance_type  = var.instance_type
-  ssh_username   = var.ssh_username
-  ami_name       = "${var.ami_name_prefix}-{{timestamp}}"
+  region        = var.aws_region
+  source_ami    = var.source_ami # Ensure this is Ubuntu 24.04 LTS or update accordingly
+  instance_type = var.instance_type
+  ssh_username  = var.ssh_username
+  ami_name      = "${var.ami_name_prefix}-{{timestamp}}"
 }
 
 build {
@@ -89,10 +89,10 @@ build {
 
   # Install Maven
   provisioner "shell" {
-  inline = [
-    "sudo apt-get install -y maven"
-  ]
-}
+    inline = [
+      "sudo apt-get install -y maven"
+    ]
+  }
 
 
   # Create application directory and set permissions
@@ -115,17 +115,17 @@ build {
   # }
 
   provisioner "shell" {
-  inline = [
-    "cat <<EOL | sudo tee /opt/csye6225/.env",
-    "DB_URL=${var.db_url}",
-    "DB_USERNAME=${var.db_username}",
-    "DB_PASSWORD=${var.db_password}",
-    "EOL",
-    "sudo chmod 644 /opt/csye6225/.env"
+    inline = [
+      "cat <<EOL | sudo tee /opt/csye6225/.env",
+      "DB_URL=${var.db_url}",
+      "DB_USERNAME=${var.db_username}",
+      "DB_PASSWORD=${var.db_password}",
+      "EOL",
+      "sudo chmod 644 /opt/csye6225/.env"
     ]
   }
 
-  
+
   # Create group and user 'csye6225' with no login shell, and change ownership of the app directory
   provisioner "shell" {
     inline = [
@@ -147,9 +147,9 @@ build {
   }
 
   provisioner "shell" {
-  inline = [
-    "sudo mysql -u \"${var.db_username}\" -p\"${var.db_password}\" -e \"ALTER USER '${var.db_username}'@'localhost' IDENTIFIED WITH mysql_native_password BY '${var.db_password}'; FLUSH PRIVILEGES;\""
-   ]
+    inline = [
+      "sudo mysql -u \"${var.db_username}\" -p\"${var.db_password}\" -e \"ALTER USER '${var.db_username}'@'localhost' IDENTIFIED WITH mysql_native_password BY '${var.db_password}'; FLUSH PRIVILEGES;\""
+    ]
   }
 
 
