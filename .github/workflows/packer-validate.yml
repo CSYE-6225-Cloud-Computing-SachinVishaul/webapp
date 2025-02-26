@@ -15,6 +15,7 @@ jobs:
 
       - name: Generate Packer Vars File from Secrets
         run: |
+          cd packer
           echo 'aws_region       = "${{ secrets.AWS_REGION }}"' > custom.pkrvars.hcl
           echo 'source_ami       = "${{ secrets.SOURCE_AMI }}"' >> custom.pkrvars.hcl
           echo 'instance_type    = "${{ secrets.INSTANCE_TYPE }}"' >> custom.pkrvars.hcl
