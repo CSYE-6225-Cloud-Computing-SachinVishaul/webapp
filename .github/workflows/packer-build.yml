@@ -63,4 +63,15 @@ jobs:
           packer init .
 
       - name: Build Custom AMI with Packer
-        run: packer build -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl
+        run: |
+          packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl | tee packer_output.log
+          AMI_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
+          echo "AMI_ID=$AMI_ID"
+          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+
+      - name: Share AMI with DEMO Account
+        run: |
+          echo "Sharing AMI $AMI_ID with DEMO account"
+          aws ec2 modify-image-attribute \
+            --image-id "$AMI_ID" \
+            --launch-permission "Add=[{UserId=${{ secrets.DEMO_AWS_ACCOUNT_ID }} }]"
