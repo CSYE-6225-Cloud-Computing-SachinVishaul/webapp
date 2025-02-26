@@ -13,6 +13,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Installing Packer
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: "latest"
+
+      - name: Check Packer Formatting
+        run: |
+          cd packer
+          packer fmt -check .
+
       - name: Generate Packer Vars File from Secrets
         run: |
           cd packer
@@ -26,19 +37,7 @@ jobs:
           echo 'db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
           echo 'db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
           echo 'db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
-
-
-      - name: Installing Packer
-        uses: hashicorp/setup-packer@main
-        id: setup
-        with:
-          version: "latest"
-
-
-      - name: Check Packer Formatting
-        run: |
-          cd packer
-          packer fmt -check .
+      
 
       
       - name: Configure AWS Credentials
