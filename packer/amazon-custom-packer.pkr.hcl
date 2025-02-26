@@ -135,7 +135,7 @@ build {
     ]
   }
 
-  # Start MySQL service and set up the local database and user
+  ## Start MySQL service and set up the local database and user
   provisioner "shell" {
     inline = [
       "sudo systemctl start mysql",
