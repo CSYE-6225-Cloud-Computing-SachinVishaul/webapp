@@ -35,7 +35,10 @@ jobs:
 
 
       - name: Check Packer Formatting
-        run: packer fmt -check .
+        run: |
+          cd packer
+          packer fmt -check .
+
       
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
