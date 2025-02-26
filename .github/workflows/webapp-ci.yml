@@ -46,3 +46,12 @@ jobs:
 
       - name: Run Maven Tests
         run: mvn test
+      
+      - name: Build Jar Artifact
+        run: mvn clean package -DskipTests
+
+      - name: Upload Jar Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: springboot-app
+          path: target/*.jar
