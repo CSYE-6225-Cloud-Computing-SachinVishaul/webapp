@@ -47,6 +47,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Initialize Packer Plugins
+        run: |
+          cd packer
+          packer init .
+
+
       
       - name: Validate Packer Template
         run: packer validate -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl
