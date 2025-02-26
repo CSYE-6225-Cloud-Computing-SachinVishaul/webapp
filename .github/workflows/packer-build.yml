@@ -18,6 +18,10 @@ jobs:
           name: springboot-app
           path: target
 
+      - name: Change Directory to packer
+        run: |
+          cd packer
+
       - name: Generate Packer Vars File from Secrets
         run: |
           cat <<EOF > custom.pkrvars.hcl
@@ -33,11 +37,15 @@ jobs:
           db_password      = "${{ secrets.DB_PASSWORD }}"
           EOF
 
-      - name: Install Packer
-        run: |
-          wget https://releases.hashicorp.com/packer/1.8.0/packer_1.8.0_linux_amd64.zip
-          unzip packer_1.8.0_linux_amd64.zip
-          sudo mv packer /usr/local/bin/
+      - name: Installing Packer
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: "latest"
+
+      - name: Run `packer init`
+        id: init
+        run: "packer init packer/amazon-custom-packer.pkr.hcl"
       
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -47,4 +55,4 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Build Custom AMI with Packer
-        run: packer build -var-file=custom.pkrvars.hcl amazon-custom-image.pkr.hcl
+        run: packer build -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl
