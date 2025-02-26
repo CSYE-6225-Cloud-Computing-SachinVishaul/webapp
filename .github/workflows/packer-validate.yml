@@ -51,8 +51,6 @@ jobs:
           cd packer
           packer init .
 
-
-      
       - name: Validate Packer Template
         run: packer validate -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl
 
