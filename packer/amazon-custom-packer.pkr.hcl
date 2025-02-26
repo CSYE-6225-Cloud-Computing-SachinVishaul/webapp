@@ -71,7 +71,7 @@ build {
     "source.amazon-ebs.ubuntu"
   ]
 
-  # Update system packages and upgrade
+  ## Update system packages and upgrade
   provisioner "shell" {
     inline = [
       "export DEBIAN_FRONTEND=noninteractive",
