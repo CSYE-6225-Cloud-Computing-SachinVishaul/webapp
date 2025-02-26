@@ -37,7 +37,7 @@ jobs:
           echo 'db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
           echo 'db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
       
-
+# jar_source=target/webapp-0.0.1-SNAPSHOT.jar
       
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -50,9 +50,13 @@ jobs:
         run: |
           cd packer
           packer init .
+          
+      - name: Create dummy Jar file
+        run: |
+          mkdir -p target
+          touch target/webapp-0.0.1-SNAPSHOT.jar
 
 
-      
       - name: Validate Packer Template
         run: packer validate -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl
 

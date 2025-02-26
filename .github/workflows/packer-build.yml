@@ -12,15 +12,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Download Jar Artifact
-        uses: actions/download-artifact@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v3
         with:
-          name: springboot-app
-          path: target
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Change Directory to packer
-        run: |
-          cd packer
+      - name: Cache Maven Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven
+
+      - name: Build Jar Artifact
+        run: mvn clean package -DskipTests
+
 
       - name: Generate Packer Vars File from Secrets
         run: |

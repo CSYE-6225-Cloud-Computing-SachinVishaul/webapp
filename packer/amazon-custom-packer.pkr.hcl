@@ -153,7 +153,7 @@ build {
   }
 
 
-  # Copy the pre-built JAR file from your local Windows machine to the instance's /tmp directory
+  # Copy the pre-built JAR file to the instance's /tmp directory
   provisioner "file" {
     source      = var.jar_source
     destination = var.jar_destination
