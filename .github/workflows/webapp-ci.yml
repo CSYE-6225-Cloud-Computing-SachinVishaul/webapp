@@ -47,8 +47,8 @@ jobs:
       - name: Run Maven Tests
         run: mvn test
       
-      # - name: Build Jar Artifact
-      #   run: mvn clean package -DskipTests
+      - name: Build Jar Artifact
+        run: mvn clean package -DskipTests
 
       # - name: Upload Jar Artifact
       #   uses: actions/upload-artifact@v4
