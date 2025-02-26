@@ -51,9 +51,7 @@ jobs:
           cd packer
           packer init .
 
-      - name: Sleep for 1 minute
-        run: sleep 60
 
       - name: Validate Packer Template
-        run: packer validate -except=copy_jar -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl
+        run: packer validate -except="copy_jar" -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl
 
