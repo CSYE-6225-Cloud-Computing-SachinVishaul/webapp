@@ -154,7 +154,7 @@ build {
 
 
   # Copy the pre-built JAR file to the instance's /tmp directory
-  provisioner "file" "copy_jar" {
+  provisioner "file" {
     source      = var.jar_source
     destination = var.jar_destination
   }
