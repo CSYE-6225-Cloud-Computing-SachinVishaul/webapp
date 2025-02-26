@@ -49,4 +49,4 @@ jobs:
 
       
       - name: Validate Packer Template
-        run: packer validate -var-file=custom.pkrvars.hcl amazon-custom-image.pkr.hcl
+        run: packer validate -var-file=custom.pkrvars.hcl amazon-custom-packer.pkr.hcl
