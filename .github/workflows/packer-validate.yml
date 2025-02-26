@@ -2,9 +2,8 @@ name: Packer CI - Status Check
 
 on:
   pull_request:
-    paths:
-      - '**/*.pkr.hcl'
-      - '**/*.pkrvars.hcl'
+    branches:
+      - main
 
 jobs:
   packer-check:
