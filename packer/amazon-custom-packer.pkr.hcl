@@ -58,12 +58,36 @@ variable "db_password" {
   description = "Database password"
 }
 
+
+variable "volume_type" {
+  type        = string
+  description = "volume type"
+  default     = "gp2"
+}
+variable "volume_size" {
+  type        = number
+  description = "volume size"
+  default     = 25
+}
+variable "termination" {
+  type        = bool
+  description = "delete on termination"
+  default     = true
+}
+
 source "amazon-ebs" "ubuntu" {
   region        = var.aws_region
   source_ami    = var.source_ami # Ensure this is Ubuntu 24.04 LTS or update accordingly
   instance_type = var.instance_type
   ssh_username  = var.ssh_username
   ami_name      = "${var.ami_name_prefix}-{{timestamp}}"
+
+  launch_block_device_mappings {
+    device_name           = "/dev/sda1"
+    volume_type           = var.volume_type
+    volume_size           = var.volume_size
+    delete_on_termination = var.termination
+  }
 }
 
 build {
