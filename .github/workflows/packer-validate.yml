@@ -37,7 +37,7 @@ jobs:
           echo 'db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
           echo 'db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
       
-# jar_source=target/webapp-0.0.1-SNAPSHOT.jar
+## jar_source=target/webapp-0.0.1-SNAPSHOT.jar
       
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
