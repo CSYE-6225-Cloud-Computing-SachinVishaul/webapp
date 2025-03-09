@@ -33,6 +33,31 @@ variable "image_name_prefix" {
   description = "Prefix for the image name"
 }
 
+variable "jar_source" {
+  type        = string
+  description = "Path to the local JAR file"
+}
+
+variable "jar_destination" {
+  type    = string
+  default = null
+}
+
+
+variable "db_url" {
+  type        = string
+  description = "Database connection URL"
+}
+
+variable "db_username" {
+  type        = string
+  description = "Database username"
+}
+
+variable "db_password" {
+  type        = string
+  description = "Database password"
+}
 
 locals {
   image_name = "${var.image_name_prefix}-{{timestamp}}"
