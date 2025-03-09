@@ -59,31 +59,6 @@ variable "db_password" {
   description = "Database password"
 }
 
-variable "aws_region" {
-  type    = string
-  default = null
-}
-
-variable "ssh_username" {
-  type    = string
-  default = null
-}
-
-variable "ami_name_prefix" {
-  type    = string
-  default = null
-}
-
-variable "instance_type" {
-  type    = string
-  default = null
-}
-
-variable "source_ami" {
-  type    = string
-  default = null
-}
-
 locals {
   image_name = "${var.image_name_prefix}-{{timestamp}}"
 }

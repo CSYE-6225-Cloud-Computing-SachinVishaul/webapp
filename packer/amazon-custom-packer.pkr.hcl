@@ -75,32 +75,7 @@ variable "termination" {
   default     = true
 }
 
-variable "gcp_instance_type" {
-  type    = string
-  default = null
-}
 
-
-variable "image_name_prefix" {
-  type    = string
-  default = null
-}
-
-variable "gcp_zone" {
-  type    = string
-  default = null
-}
-
-variable "gcp_ssh_username" {
-  type    = string
-  default = null
-}
-
-
-variable "gcp_project" {
-  type    = string
-  default = null
-}
 
 source "amazon-ebs" "ubuntu" {
   region        = var.aws_region
