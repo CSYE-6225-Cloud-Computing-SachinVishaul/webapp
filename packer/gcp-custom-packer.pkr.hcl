@@ -1,35 +1,36 @@
 packer {
   required_plugins {
-    amazon = {
-      version = ">= 1.0.0, < 2.0.0"
-      source  = "github.com/hashicorp/amazon"
+    googlecompute = {
+      version = ">= 1.1.8"
+      source  = "github.com/hashicorp/googlecompute"
     }
   }
 }
 
-variable "aws_region" {
-  type    = string
-  default = "us-east-1"
-}
-
-variable "source_ami" {
+variable "gcp_project" {
   type        = string
-  description = "Source AMI to use for creating the new AMI"
+  description = "GCP Project ID"
 }
 
-variable "instance_type" {
+variable "gcp_zone" {
   type        = string
-  description = "EC2 instance type"
+  default     = "us-central1-a"
+  description = "GCP Zone for the image build"
 }
 
-variable "ssh_username" {
+variable "gcp_instance_type" {
+  type        = string
+  description = "GCE machine type"
+}
+
+variable "gcp_ssh_username" {
   type        = string
   description = "SSH username for the instance"
 }
 
-variable "ami_name_prefix" {
+variable "image_name_prefix" {
   type        = string
-  description = "Prefix for the AMI name"
+  description = "Prefix for the image name"
 }
 
 variable "jar_source" {
@@ -58,71 +59,54 @@ variable "db_password" {
   description = "Database password"
 }
 
-
-variable "volume_type" {
-  type        = string
-  description = "volume type"
-  default     = "gp2"
-}
-variable "volume_size" {
-  type        = number
-  description = "volume size"
-  default     = 25
-}
-variable "termination" {
-  type        = bool
-  description = "delete on termination"
-  default     = true
-}
-
-variable "gcp_instance_type" {
+variable "aws_region" {
   type    = string
   default = null
 }
 
-
-variable "image_name_prefix" {
+variable "ssh_username" {
   type    = string
   default = null
 }
 
-variable "gcp_zone" {
+variable "ami_name_prefix" {
   type    = string
   default = null
 }
 
-variable "gcp_ssh_username" {
+variable "instance_type" {
   type    = string
   default = null
 }
 
-
-variable "gcp_project" {
+variable "source_ami" {
   type    = string
   default = null
 }
 
-source "amazon-ebs" "ubuntu" {
-  region        = var.aws_region
-  source_ami    = var.source_ami # Ensure this is Ubuntu 24.04 LTS or update accordingly
-  instance_type = var.instance_type
-  ssh_username  = var.ssh_username
-  ami_name      = "${var.ami_name_prefix}-{{timestamp}}"
+locals {
+  image_name = "${var.image_name_prefix}-{{timestamp}}"
+}
 
-  launch_block_device_mappings {
-    device_name           = "/dev/sda1"
-    volume_type           = var.volume_type
-    volume_size           = var.volume_size
-    delete_on_termination = var.termination
-  }
+
+# Use an official Ubuntu 24.04 LTS image from GCP
+source "googlecompute" "ubuntu_base" {
+  project_id    = var.gcp_project
+  zone          = var.gcp_zone
+  machine_type  = var.gcp_instance_type
+  source_image  = "ubuntu-2404-noble-amd64-v20250214" # Verify this image exists in your region
+  ssh_username  = var.gcp_ssh_username
+  image_name    = local.image_name
+  image_family  = "csye6225-dev"
+  instance_name = "packer-${uuidv4()}"
 }
 
 build {
   sources = [
-    "source.amazon-ebs.ubuntu"
+    "source.googlecompute.ubuntu_base"
   ]
 
-  ## Update system packages and upgrade
+  # Provisioner: Update packages and upgrade system
   provisioner "shell" {
     inline = [
       "export DEBIAN_FRONTEND=noninteractive",
@@ -145,7 +129,6 @@ build {
     ]
   }
 
-
   # Create application directory and set permissions
   provisioner "shell" {
     inline = [
@@ -153,17 +136,6 @@ build {
       "sudo chown ubuntu:ubuntu /opt/csye6225"
     ]
   }
-
-  # Create configuration file with database environment variables
-  # provisioner "shell" {
-  #   inline = [
-  #     "echo '#!/bin/bash' | sudo tee /opt/csye6225/config.sh",
-  #     "echo 'DB_URL=\"jdbc:mysql://localhost:3306/healthcheckdb\"' | sudo tee -a /opt/csye6225/config.sh",
-  #     "echo 'DB_USERNAME=\"root\"' | sudo tee -a /opt/csye6225/config.sh",
-  #     "echo 'DB_PASSWORD=\"root\"' | sudo tee -a /opt/csye6225/config.sh",
-  #     "sudo chmod 644 /opt/csye6225/config.sh"
-  #   ]
-  # }
 
   provisioner "shell" {
     inline = [
@@ -203,8 +175,6 @@ build {
     ]
   }
 
-
-  # Copy the pre-built JAR file to the instance's /tmp directory
   provisioner "file" {
     source      = var.jar_source
     destination = var.jar_destination
@@ -235,4 +205,22 @@ build {
       "sudo systemctl enable myapp.service"
     ]
   }
+
+  # Provisioner: Install some basic packages (for testing)
+  provisioner "shell" {
+    inline = [
+      "sudo apt-get install -y curl"
+    ]
+  }
+
+  # Provisioner: Create a test file to verify image creation
+  provisioner "shell" {
+    inline = [
+      "echo 'Hello, this is your custom GCP image!' | sudo tee /home/ubuntu/gcp_image_test.txt"
+    ]
+  }
+
+
 }
+
+
