@@ -91,6 +91,7 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
             
       - name: Initialize Packer Plugins
         run: |
@@ -103,6 +104,14 @@ jobs:
           IMAGE_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
           echo "IMAGE_ID=$IMAGE_ID"
           echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+
+      - name: Share GCP Image with DEMO Project
+        run: |
+          echo "Sharing GCP image $IMAGE_ID with DEMO default service account"
+          gcloud compute images add-iam-policy-binding "$IMAGE_ID" \
+          --project "${{ secrets.GCP_PROJECT }}" \
+          --member="serviceAccount:${{ secrets.DEMO_GCP_SERVICE_ACCOUNT }}" \
+          --role="roles/compute.imageUser"
 
       - name: Build Custom AMI with Packer
         run: |
