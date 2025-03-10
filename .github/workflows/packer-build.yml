@@ -89,6 +89,13 @@ jobs:
           AMI_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
           echo "AMI_ID=$AMI_ID"
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+      
+      - name: Build Custom Image with Packer (GCP)
+        run: |
+          packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl | tee packer_output.log
+          IMAGE_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
+          echo "IMAGE_ID=$IMAGE_ID"
+          echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
 
       - name: Share AMI with DEMO Account
         run: |
