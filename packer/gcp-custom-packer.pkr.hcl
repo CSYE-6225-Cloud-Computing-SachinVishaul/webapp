@@ -33,28 +33,28 @@ variable "image_name_prefix" {
   description = "Prefix for the image name"
 }
 
-variable "jar_source" {
+variable "gcp_jar_source" {
   type        = string
   description = "Path to the local JAR file"
 }
 
-variable "jar_destination" {
+variable "gcp_jar_destination" {
   type    = string
   default = null
 }
 
 
-variable "db_url" {
+variable "gcp_db_url" {
   type        = string
   description = "Database connection URL"
 }
 
-variable "db_username" {
+variable "gcp_db_username" {
   type        = string
   description = "Database username"
 }
 
-variable "db_password" {
+variable "gcp_db_password" {
   type        = string
   description = "Database password"
 }
@@ -115,9 +115,9 @@ build {
   provisioner "shell" {
     inline = [
       "cat <<EOL | sudo tee /opt/csye6225/.env",
-      "DB_URL=${var.db_url}",
-      "DB_USERNAME=${var.db_username}",
-      "DB_PASSWORD=${var.db_password}",
+      "DB_URL=${var.gcp_db_url}",
+      "DB_USERNAME=${var.gcp_db_username}",
+      "DB_PASSWORD=${var.gcp_db_password}",
       "EOL",
       "sudo chmod 644 /opt/csye6225/.env"
     ]
@@ -138,21 +138,21 @@ build {
     inline = [
       "sudo systemctl start mysql",
       "sudo mysql -e \"CREATE DATABASE healthcheckdb;\"",
-      "sudo mysql -e \"CREATE USER '${var.db_username}' IDENTIFIED WITH mysql_native_password BY '${var.db_password}';\"",
-      "sudo mysql -e \"GRANT ALL PRIVILEGES ON healthcheckdb.* TO '${var.db_username}';\"",
+      "sudo mysql -e \"CREATE USER '${var.gcp_db_username}' IDENTIFIED WITH mysql_native_password BY '${var.gcp_db_password}';\"",
+      "sudo mysql -e \"GRANT ALL PRIVILEGES ON healthcheckdb.* TO '${var.gcp_db_username}';\"",
       "sudo mysql -e \"FLUSH PRIVILEGES;\""
     ]
   }
 
   provisioner "shell" {
     inline = [
-      "sudo mysql -u \"${var.db_username}\" -p\"${var.db_password}\" -e \"ALTER USER '${var.db_username}'@'localhost' IDENTIFIED WITH mysql_native_password BY '${var.db_password}'; FLUSH PRIVILEGES;\""
+      "sudo mysql -u \"${var.gcp_db_username}\" -p\"${var.gcp_db_password}\" -e \"ALTER USER '${var.gcp_db_username}'@'localhost' IDENTIFIED WITH mysql_native_password BY '${var.gcp_db_password}'; FLUSH PRIVILEGES;\""
     ]
   }
 
   provisioner "file" {
-    source      = var.jar_source
-    destination = var.jar_destination
+    source      = var.gcp_jar_source
+    destination = var.gcp_jar_destination
   }
 
   # Move the JAR file to /opt/csye6225 and adjust ownership

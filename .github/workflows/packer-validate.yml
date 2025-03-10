@@ -41,6 +41,11 @@ jobs:
           echo 'gcp_instance_type = "${{ secrets.GCP_INSTANCE_TYPE }}"' >> custom.pkrvars.hcl
           echo 'gcp_ssh_username  = "${{ secrets.GCP_SSH_USERNAME }}"' >> custom.pkrvars.hcl
           echo 'image_name_prefix  = "${{ secrets.GCP_IMAGE_PREFIX }}"' >> custom.pkrvars.hcl
+          echo 'gcp_jar_source       = "${{ secrets.JAR_SOURCE }}"' >> custom.pkrvars.hcl
+          echo 'gcp_jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> custom.pkrvars.hcl
+          echo 'gcp_db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
+          echo 'gcp_db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
+          echo 'gcp_db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
       
 ## jar_source=target/webapp-0.0.1-SNAPSHOT.jar
       
@@ -67,9 +72,9 @@ jobs:
           touch target/webapp-0.0.1-SNAPSHOT.jar
 
 
-      - name: Validate Packer Template
+      - name: Validate AWS Packer Template
         run: packer validate -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl
 
-      - name: Validate Packer Template
+      - name: Validate GCP Packer Template
         run: packer validate -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl
 
