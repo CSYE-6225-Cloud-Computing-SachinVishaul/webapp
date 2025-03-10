@@ -62,6 +62,11 @@ jobs:
           echo 'db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
           echo 'db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
           echo 'db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
+          echo 'gcp_project       = "${{ secrets.GCP_PROJECT }}"' >> custom.pkrvars.hcl
+          echo 'gcp_zone          = "${{ secrets.GCP_ZONE }}"' >> custom.pkrvars.hcl
+          echo 'gcp_instance_type = "${{ secrets.GCP_INSTANCE_TYPE }}"' >> custom.pkrvars.hcl
+          echo 'gcp_ssh_username  = "${{ secrets.GCP_SSH_USERNAME }}"' >> custom.pkrvars.hcl
+          echo 'image_name_prefix  = "${{ secrets.GCP_IMAGE_PREFIX }}"' >> custom.pkrvars.hcl
           echo 'gcp_jar_source       = "${{ secrets.JAR_SOURCE }}"' >> custom.pkrvars.hcl
           echo 'gcp_jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> custom.pkrvars.hcl
           echo 'gcp_db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
