@@ -87,11 +87,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+            
       - name: Initialize Packer Plugins
         run: |
           cd packer
           packer init .
+
+      - name: Build Custom Image with Packer (GCP)
+        run: |
+          packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl | tee packer_output.log
+          IMAGE_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
+          echo "IMAGE_ID=$IMAGE_ID"
+          echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
 
       - name: Build Custom AMI with Packer
         run: |
@@ -99,13 +110,6 @@ jobs:
           AMI_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
           echo "AMI_ID=$AMI_ID"
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
-      
-      - name: Build Custom Image with Packer (GCP)
-        run: |
-          packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl | tee packer_output.log
-          IMAGE_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
-          echo "IMAGE_ID=$IMAGE_ID"
-          echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
 
       - name: Share AMI with DEMO Account
         run: |
