@@ -1,7 +1,7 @@
 # Automated Application Setup and API Testing
 
 This repository contains a Spring Boot web application along with a shell script (`script.sh`) that automates the application setup on an Ubuntu 24.04 LTS server. In addition, the repository includes an API testing suite implemented using [REST Assured](https://rest-assured.io/) (or a similar framework) to validate both success and failure scenarios of the application's API.
-
+ 
 ## Table of Contents
 
 - [Automated Application Setup and API Testing](#automated-application-setup-and-api-testing)
