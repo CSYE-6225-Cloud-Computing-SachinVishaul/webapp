@@ -97,10 +97,9 @@ jobs:
       - name: Build and Share AWS & GCP Images in Parallel
         run: |
           set -e
-          # Build and share GCP image in background
+          # Run GCP build and share in background
           (
-            cd packer
-            packer build -machine-readable -var-file=custom.pkrvars.hcl gcp-custom-packer.pkr.hcl | tee packer_output_gcp.log
+            packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl | tee packer_output_gcp.log
             IMAGE_ID=$(grep 'artifact,0,id' packer_output_gcp.log | cut -d, -f6 | cut -d: -f2)
             echo "IMAGE_ID=$IMAGE_ID"
             echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
@@ -111,10 +110,9 @@ jobs:
               --role="roles/compute.imageUser"
           ) &
           
-          # Build and share AWS AMI in background
+          # Run AWS build and share in background
           (
-            cd packer
-            packer build -machine-readable -var-file=custom.pkrvars.hcl amazon-custom-packer.pkr.hcl | tee packer_output_aws.log
+            packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl | tee packer_output_aws.log
             AMI_ID=$(grep 'artifact,0,id' packer_output_aws.log | cut -d, -f6 | cut -d: -f2)
             echo "AMI_ID=$AMI_ID"
             echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
@@ -125,6 +123,7 @@ jobs:
           ) &
           
           wait
+
 
 
 # name: Packer Build
