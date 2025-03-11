@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-ami:
+  build-app:
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -18,13 +18,10 @@ jobs:
           - 3306:3306
         options: >-
           --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
-
     env:
-      # Set your DB connection URL; adjust as needed by your app.
       DB_URL: ${{ secrets.DB_URL }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      ## jdbc:mysql://localhost:3306/healthcheckdb
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -32,7 +29,7 @@ jobs:
       - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
       - name: Cache Maven Packages
@@ -48,30 +45,41 @@ jobs:
       - name: Build Jar Artifact
         run: mvn clean package -DskipTests
 
+  build-gcp-image:
+    runs-on: ubuntu-latest
+    needs: build-app
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Generate Packer Vars File from Secrets
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Generate Packer Vars File for GCP
         run: |
-          cd packer
-          echo 'aws_region       = "${{ secrets.AWS_REGION }}"' > custom.pkrvars.hcl
-          echo 'source_ami       = "${{ secrets.SOURCE_AMI }}"' >> custom.pkrvars.hcl
-          echo 'instance_type    = "${{ secrets.INSTANCE_TYPE }}"' >> custom.pkrvars.hcl
-          echo 'ssh_username     = "${{ secrets.SSH_USERNAME }}"' >> custom.pkrvars.hcl
-          echo 'ami_name_prefix  = "${{ secrets.AMI_NAME_PREFIX }}"' >> custom.pkrvars.hcl
-          echo 'jar_source       = "${{ secrets.JAR_SOURCE }}"' >> custom.pkrvars.hcl
-          echo 'jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> custom.pkrvars.hcl
-          echo 'db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
-          echo 'db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
-          echo 'db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
-          echo 'gcp_project       = "${{ secrets.GCP_PROJECT }}"' >> custom.pkrvars.hcl
-          echo 'gcp_zone          = "${{ secrets.GCP_ZONE }}"' >> custom.pkrvars.hcl
-          echo 'gcp_instance_type = "${{ secrets.GCP_INSTANCE_TYPE }}"' >> custom.pkrvars.hcl
-          echo 'gcp_ssh_username  = "${{ secrets.GCP_SSH_USERNAME }}"' >> custom.pkrvars.hcl
-          echo 'image_name_prefix  = "${{ secrets.GCP_IMAGE_PREFIX }}"' >> custom.pkrvars.hcl
-          echo 'gcp_jar_source       = "${{ secrets.JAR_SOURCE }}"' >> custom.pkrvars.hcl
-          echo 'gcp_jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> custom.pkrvars.hcl
-          echo 'gcp_db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
-          echo 'gcp_db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
-          echo 'gcp_db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
+          mkdir -p packer
+          echo 'aws_region       = "${{ secrets.AWS_REGION }}"' > packer/custom.pkrvars.hcl
+          echo 'source_ami       = "${{ secrets.SOURCE_AMI }}"' >> packer/custom.pkrvars.hcl
+          echo 'instance_type    = "${{ secrets.INSTANCE_TYPE }}"' >> packer/custom.pkrvars.hcl
+          echo 'ssh_username     = "${{ secrets.SSH_USERNAME }}"' >> packer/custom.pkrvars.hcl
+          echo 'ami_name_prefix  = "${{ secrets.AMI_NAME_PREFIX }}"' >> packer/custom.pkrvars.hcl
+          echo 'jar_source       = "${{ secrets.JAR_SOURCE }}"' >> packer/custom.pkrvars.hcl
+          echo 'jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> packer/custom.pkrvars.hcl
+          echo 'db_url           = "${{ secrets.DB_URL }}"' >> packer/custom.pkrvars.hcl
+          echo 'db_username      = "${{ secrets.DB_USERNAME }}"' >> packer/custom.pkrvars.hcl
+          echo 'db_password      = "${{ secrets.DB_PASSWORD }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_project       = "${{ secrets.GCP_PROJECT }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_zone          = "${{ secrets.GCP_ZONE }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_instance_type = "${{ secrets.GCP_INSTANCE_TYPE }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_ssh_username  = "${{ secrets.GCP_SSH_USERNAME }}"' >> packer/custom.pkrvars.hcl
+          echo 'image_name_prefix  = "${{ secrets.GCP_IMAGE_PREFIX }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_jar_source       = "${{ secrets.JAR_SOURCE }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_db_url           = "${{ secrets.DB_URL }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_db_username      = "${{ secrets.DB_USERNAME }}"' >> packer/custom.pkrvars.hcl
+          echo 'gcp_db_password      = "${{ secrets.DB_PASSWORD }}"' >> packer/custom.pkrvars.hcl
 
       - name: Installing Packer
         uses: hashicorp/setup-packer@main
@@ -79,20 +87,6 @@ jobs:
         with:
           version: "latest"
 
-      
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-            
       - name: Initialize Packer Plugins
         run: |
           cd packer
@@ -100,7 +94,8 @@ jobs:
 
       - name: Build Custom Image with Packer (GCP)
         run: |
-          packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl | tee packer_output.log
+          cd packer
+          packer build -machine-readable -var-file=custom.pkrvars.hcl gcp-custom-packer.pkr.hcl | tee packer_output.log
           IMAGE_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
           echo "IMAGE_ID=$IMAGE_ID"
           echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
@@ -109,13 +104,53 @@ jobs:
         run: |
           echo "Sharing GCP image $IMAGE_ID with DEMO default service account"
           gcloud compute images add-iam-policy-binding "$IMAGE_ID" \
-          --project "${{ secrets.GCP_PROJECT }}" \
-          --member="serviceAccount:${{ secrets.DEMO_GCP_SERVICE_ACCOUNT }}" \
-          --role="roles/compute.imageUser"
+            --project "${{ secrets.GCP_PROJECT }}" \
+            --member="serviceAccount:${{ secrets.DEMO_GCP_SERVICE_ACCOUNT }}" \
+            --role="roles/compute.imageUser"
+
+  build-aws-image:
+    runs-on: ubuntu-latest
+    needs: build-app
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Generate Packer Vars File for AWS
+        run: |
+          mkdir -p packer
+          echo 'aws_region       = "${{ secrets.AWS_REGION }}"' > packer/custom.pkrvars.hcl
+          echo 'source_ami       = "${{ secrets.SOURCE_AMI }}"' >> packer/custom.pkrvars.hcl
+          echo 'instance_type    = "${{ secrets.INSTANCE_TYPE }}"' >> packer/custom.pkrvars.hcl
+          echo 'ssh_username     = "${{ secrets.SSH_USERNAME }}"' >> packer/custom.pkrvars.hcl
+          echo 'ami_name_prefix  = "${{ secrets.AMI_NAME_PREFIX }}"' >> packer/custom.pkrvars.hcl
+          echo 'jar_source       = "${{ secrets.JAR_SOURCE }}"' >> packer/custom.pkrvars.hcl
+          echo 'jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> packer/custom.pkrvars.hcl
+          echo 'db_url           = "${{ secrets.DB_URL }}"' >> packer/custom.pkrvars.hcl
+          echo 'db_username      = "${{ secrets.DB_USERNAME }}"' >> packer/custom.pkrvars.hcl
+          echo 'db_password      = "${{ secrets.DB_PASSWORD }}"' >> packer/custom.pkrvars.hcl
+
+      - name: Installing Packer
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: "latest"
+
+      - name: Initialize Packer Plugins
+        run: |
+          cd packer
+          packer init .
 
       - name: Build Custom AMI with Packer
         run: |
-          packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl | tee packer_output.log
+          cd packer
+          packer build -machine-readable -var-file=custom.pkrvars.hcl amazon-custom-packer.pkr.hcl | tee packer_output.log
           AMI_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
           echo "AMI_ID=$AMI_ID"
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
@@ -126,3 +161,133 @@ jobs:
           aws ec2 modify-image-attribute \
             --image-id "$AMI_ID" \
             --launch-permission "Add=[{UserId=${{ secrets.DEMO_AWS_ACCOUNT_ID }} }]"
+
+
+# name: Packer Build
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   build-ami:
+#     runs-on: ubuntu-latest
+#     services:
+#       mysql:
+#         image: mysql:8.0
+#         env:
+#           MYSQL_DATABASE: healthcheckdb
+#           MYSQL_ROOT_PASSWORD: ${{ secrets.DB_PASSWORD }}
+#         ports:
+#           - 3306:3306
+#         options: >-
+#           --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+
+#     env:
+#       # Set your DB connection URL; adjust as needed by your app.
+#       DB_URL: ${{ secrets.DB_URL }}
+#       DB_USERNAME: ${{ secrets.DB_USERNAME }}
+#       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+#       ## jdbc:mysql://localhost:3306/healthcheckdb
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
+
+#       - name: Set up Java 17
+#         uses: actions/setup-java@v3
+#         with:
+#           distribution: 'temurin'
+#           java-version: '17'
+
+#       - name: Cache Maven Packages
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.m2
+#           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+#           restore-keys: ${{ runner.os }}-maven
+
+#       - name: Run Integration Tests
+#         run: mvn test
+
+#       - name: Build Jar Artifact
+#         run: mvn clean package -DskipTests
+
+
+#       - name: Generate Packer Vars File from Secrets
+#         run: |
+#           cd packer
+#           echo 'aws_region       = "${{ secrets.AWS_REGION }}"' > custom.pkrvars.hcl
+#           echo 'source_ami       = "${{ secrets.SOURCE_AMI }}"' >> custom.pkrvars.hcl
+#           echo 'instance_type    = "${{ secrets.INSTANCE_TYPE }}"' >> custom.pkrvars.hcl
+#           echo 'ssh_username     = "${{ secrets.SSH_USERNAME }}"' >> custom.pkrvars.hcl
+#           echo 'ami_name_prefix  = "${{ secrets.AMI_NAME_PREFIX }}"' >> custom.pkrvars.hcl
+#           echo 'jar_source       = "${{ secrets.JAR_SOURCE }}"' >> custom.pkrvars.hcl
+#           echo 'jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> custom.pkrvars.hcl
+#           echo 'db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
+#           echo 'db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
+#           echo 'db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_project       = "${{ secrets.GCP_PROJECT }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_zone          = "${{ secrets.GCP_ZONE }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_instance_type = "${{ secrets.GCP_INSTANCE_TYPE }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_ssh_username  = "${{ secrets.GCP_SSH_USERNAME }}"' >> custom.pkrvars.hcl
+#           echo 'image_name_prefix  = "${{ secrets.GCP_IMAGE_PREFIX }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_jar_source       = "${{ secrets.JAR_SOURCE }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_jar_destination  = "${{ secrets.JAR_DESTINATION }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
+#           echo 'gcp_db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
+
+#       - name: Installing Packer
+#         uses: hashicorp/setup-packer@main
+#         id: setup
+#         with:
+#           version: "latest"
+
+      
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v3
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_REGION }}
+
+#       - name: Authenticate to Google Cloud
+#         uses: google-github-actions/auth@v1
+#         with:
+#           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+            
+#       - name: Initialize Packer Plugins
+#         run: |
+#           cd packer
+#           packer init .
+
+#       - name: Build Custom Image with Packer (GCP)
+#         run: |
+#           packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl | tee packer_output.log
+#           IMAGE_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
+#           echo "IMAGE_ID=$IMAGE_ID"
+#           echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+
+#       - name: Share GCP Image with DEMO Project
+#         run: |
+#           echo "Sharing GCP image $IMAGE_ID with DEMO default service account"
+#           gcloud compute images add-iam-policy-binding "$IMAGE_ID" \
+#           --project "${{ secrets.GCP_PROJECT }}" \
+#           --member="serviceAccount:${{ secrets.DEMO_GCP_SERVICE_ACCOUNT }}" \
+#           --role="roles/compute.imageUser"
+
+#       - name: Build Custom AMI with Packer
+#         run: |
+#           packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl | tee packer_output.log
+#           AMI_ID=$(grep 'artifact,0,id' packer_output.log | cut -d, -f6 | cut -d: -f2)
+#           echo "AMI_ID=$AMI_ID"
+#           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+
+#       - name: Share AMI with DEMO Account
+#         run: |
+#           echo "Sharing AMI $AMI_ID with DEMO account"
+#           aws ec2 modify-image-attribute \
+#             --image-id "$AMI_ID" \
+#             --launch-permission "Add=[{UserId=${{ secrets.DEMO_AWS_ACCOUNT_ID }} }]"
