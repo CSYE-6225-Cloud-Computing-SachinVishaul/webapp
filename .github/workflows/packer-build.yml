@@ -70,6 +70,9 @@ jobs:
           echo 'gcp_db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
           echo 'gcp_db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
           echo 'gcp_db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
+          echo 'aws_access_key_id    = "${{ secrets.AWS_ACCESS_KEY_ID }}"' >> custom.pkrvars.hcl
+          echo 'aws_secret_access_key    = "${{ secrets.AWS_SECRET_ACCESS_KEY }}"' >> custom.pkrvars.hcl
+
 
       - name: Installing Packer
         uses: hashicorp/setup-packer@main

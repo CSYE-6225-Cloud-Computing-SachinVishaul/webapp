@@ -7,20 +7,6 @@ packer {
   }
 }
 
-variable "rds_db_endpoint" {
-  type        = string
-  description = "RDS DB endpoint for the Spring Boot app"
-}
-
-variable "s3_bucket_name" {
-  type        = string
-  description = "S3 Bucket name for the Spring Boot app"
-}
-
-variable "rds_db_password" {
-  type        = string
-  description = "RDS DB password for the Spring Boot app"
-}
 
 variable "spring_profiles_active" {
   type        = string
