@@ -7,6 +7,37 @@ packer {
   }
 }
 
+variable "rds_db_endpoint" {
+  type        = string
+  description = "RDS DB endpoint for the Spring Boot app"
+}
+
+variable "s3_bucket_name" {
+  type        = string
+  description = "S3 Bucket name for the Spring Boot app"
+}
+
+variable "rds_db_password" {
+  type        = string
+  description = "RDS DB password for the Spring Boot app"
+}
+
+variable "spring_profiles_active" {
+  type        = string
+  description = "Spring active profile"
+  default     = "dev"
+}
+
+variable "aws_access_key_id" {
+  type        = string
+  description = "AWS Access Key ID for the application"
+}
+
+variable "aws_secret_access_key" {
+  type        = string
+  description = "AWS Secret Access Key for the application"
+}
+
 variable "aws_region" {
   type    = string
   default = "us-east-1"
@@ -140,16 +171,20 @@ build {
   #   ]
   # }
 
-  provisioner "shell" {
-    inline = [
-      "cat <<EOL | sudo tee /opt/csye6225/.env",
-      "DB_URL=${var.db_url}",
-      "DB_USERNAME=${var.db_username}",
-      "DB_PASSWORD=${var.db_password}",
-      "EOL",
-      "sudo chmod 644 /opt/csye6225/.env"
-    ]
-  }
+  # provisioner "shell" {
+  #   inline = [
+  #     "cat <<EOL | sudo tee /opt/csye6225/.env",
+  #     "DB_URL=${var.db_url}",
+  #     "DB_USERNAME=${var.db_username}",
+  #     "DB_PASSWORD=${var.db_password}",
+  #     "RDS_DB_ENDPOINT=${var.rds_db_endpoint}",
+  #     "S3_BUCKET_NAME=${var.s3_bucket_name}",
+  #     "AWS_REGION=${var.aws_region}",
+  #     "RDS_DB_PASSWORD=${var.rds_db_password}",
+  #     "EOL",
+  #     "sudo chmod 644 /opt/csye6225/.env"
+  #   ]
+  # }
 
 
   # Create group and user 'csye6225' with no login shell, and change ownership of the app directory
@@ -161,22 +196,22 @@ build {
     ]
   }
 
-  ## Start MySQL service and set up the local database and user
-  provisioner "shell" {
-    inline = [
-      "sudo systemctl start mysql",
-      "sudo mysql -e \"CREATE DATABASE healthcheckdb;\"",
-      "sudo mysql -e \"CREATE USER '${var.db_username}' IDENTIFIED WITH mysql_native_password BY '${var.db_password}';\"",
-      "sudo mysql -e \"GRANT ALL PRIVILEGES ON healthcheckdb.* TO '${var.db_username}';\"",
-      "sudo mysql -e \"FLUSH PRIVILEGES;\""
-    ]
-  }
+  # ## Start MySQL service and set up the local database and user
+  # provisioner "shell" {
+  #   inline = [
+  #     "sudo systemctl start mysql",
+  #     "sudo mysql -e \"CREATE DATABASE healthcheckdb;\"",
+  #     "sudo mysql -e \"CREATE USER '${var.db_username}' IDENTIFIED WITH mysql_native_password BY '${var.db_password}';\"",
+  #     "sudo mysql -e \"GRANT ALL PRIVILEGES ON healthcheckdb.* TO '${var.db_username}';\"",
+  #     "sudo mysql -e \"FLUSH PRIVILEGES;\""
+  #   ]
+  # }
 
-  provisioner "shell" {
-    inline = [
-      "sudo mysql -u \"${var.db_username}\" -p\"${var.db_password}\" -e \"ALTER USER '${var.db_username}'@'localhost' IDENTIFIED WITH mysql_native_password BY '${var.db_password}'; FLUSH PRIVILEGES;\""
-    ]
-  }
+  # provisioner "shell" {
+  #   inline = [
+  #     "sudo mysql -u \"${var.db_username}\" -p\"${var.db_password}\" -e \"ALTER USER '${var.db_username}'@'localhost' IDENTIFIED WITH mysql_native_password BY '${var.db_password}'; FLUSH PRIVILEGES;\""
+  #   ]
+  # }
 
 
   # Copy the pre-built JAR file to the instance's /tmp directory
@@ -202,7 +237,7 @@ build {
       "echo 'User=csye6225' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'EnvironmentFile=/opt/csye6225/.env' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'WorkingDirectory=/opt/csye6225' | sudo tee -a /etc/systemd/system/myapp.service",
-      "echo 'ExecStart=/usr/bin/java -jar /opt/csye6225/webapp-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/myapp.service",
+      "echo 'ExecStart=/usr/bin/java -Dspring.profiles.active=${var.spring_profiles_active} -Daws.accessKeyId=${var.aws_access_key_id} -Daws.secretAccessKey=${var.aws_secret_access_key} -jar /opt/csye6225/webapp-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'Restart=on-failure' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/myapp.service",

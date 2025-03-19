@@ -172,7 +172,7 @@ build {
       "echo 'User=csye6225' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'EnvironmentFile=/opt/csye6225/.env' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'WorkingDirectory=/opt/csye6225' | sudo tee -a /etc/systemd/system/myapp.service",
-      "echo 'ExecStart=/usr/bin/java -jar /opt/csye6225/webapp-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/myapp.service",
+      "echo 'echo 'ExecStart=/usr/bin/java -Dspring.profiles.active=dev -Daws.accessKeyId=${var.aws_access_key_id} -Daws.secretAccessKey=${var.aws_secret_access_key} -jar /opt/csye6225/webapp-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'Restart=on-failure' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/myapp.service",
@@ -188,12 +188,6 @@ build {
     ]
   }
 
-  # Provisioner: Create a test file to verify image creation
-  provisioner "shell" {
-    inline = [
-      "echo 'Hello, this is your custom GCP image!' | sudo tee /home/ubuntu/gcp_image_test.txt"
-    ]
-  }
 
 
 }
