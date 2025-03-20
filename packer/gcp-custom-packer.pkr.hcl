@@ -59,6 +59,16 @@ variable "gcp_db_password" {
   description = "Database password"
 }
 
+variable "aws_access_key_id" {
+  type        = string
+  description = "AWS access key ID"
+}
+
+variable "aws_secret_access_key" {
+  type        = string
+  description = "AWS secret access key"
+}
+
 locals {
   image_name = "${var.image_name_prefix}-{{timestamp}}"
 }
