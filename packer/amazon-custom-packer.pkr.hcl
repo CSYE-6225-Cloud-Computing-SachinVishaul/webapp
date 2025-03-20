@@ -194,7 +194,7 @@ build {
   # }
 
   # provisioner "shell" {
-  #   inline = [
+  ##   inline = [
   #     "sudo mysql -u \"${var.db_username}\" -p\"${var.db_password}\" -e \"ALTER USER '${var.db_username}'@'localhost' IDENTIFIED WITH mysql_native_password BY '${var.db_password}'; FLUSH PRIVILEGES;\""
   #   ]
   # }
