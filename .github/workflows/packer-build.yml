@@ -70,6 +70,10 @@ jobs:
           echo 'gcp_db_url           = "${{ secrets.DB_URL }}"' >> custom.pkrvars.hcl
           echo 'gcp_db_username      = "${{ secrets.DB_USERNAME }}"' >> custom.pkrvars.hcl
           echo 'gcp_db_password      = "${{ secrets.DB_PASSWORD }}"' >> custom.pkrvars.hcl
+          echo 'aws_access_key_id    = "${{ secrets.AWS_ACCESS_KEY_ID }}"' >> custom.pkrvars.hcl
+          echo 'aws_secret_access_key    = "${{ secrets.AWS_SECRET_ACCESS_KEY }}"' >> custom.pkrvars.hcl
+          echo 'spring_profiles_active = "${{ secrets.SPRING_PROFILE }}"' >> custom.pkrvars.hcl
+
 
       - name: Installing Packer
         uses: hashicorp/setup-packer@main
@@ -94,24 +98,11 @@ jobs:
           cd packer
           packer init .
 
-      - name: Build and Share AWS & GCP Images in Parallel
+
+      - name: Build and Share AWS Image
         run: |
-          set -e
-          # Run GCP build and share in background
-          (
-            packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl | tee packer_output_gcp.log
-            IMAGE_ID=$(grep 'artifact,0,id' packer_output_gcp.log | cut -d, -f6 | cut -d: -f2)
-            echo "IMAGE_ID=$IMAGE_ID"
-            echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
-            echo "Sharing GCP image $IMAGE_ID with DEMO default service account"
-            gcloud compute images add-iam-policy-binding "$IMAGE_ID" \
-              --project "${{ secrets.GCP_PROJECT }}" \
-              --member="serviceAccount:${{ secrets.DEMO_GCP_SERVICE_ACCOUNT }}" \
-              --role="roles/compute.imageUser"
-          ) &
-          
-          # Run AWS build and share in background
-          (
+            set -e
+            # Run AWS build and share
             packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl | tee packer_output_aws.log
             AMI_ID=$(grep 'artifact,0,id' packer_output_aws.log | cut -d, -f6 | cut -d: -f2)
             echo "AMI_ID=$AMI_ID"
@@ -120,11 +111,40 @@ jobs:
             aws ec2 modify-image-attribute \
               --image-id "$AMI_ID" \
               --launch-permission "Add=[{UserId=${{ secrets.DEMO_AWS_ACCOUNT_ID }} }]"
-          ) &
+
+
+
+
           
-          wait
-
-
+      # - name: Build and Share AWS & GCP Images in Parallel
+      #   run: |
+      #     set -e
+      #     # Run GCP build and share in background
+      #     (
+      #       packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/gcp-custom-packer.pkr.hcl | tee packer_output_gcp.log
+      #       IMAGE_ID=$(grep 'artifact,0,id' packer_output_gcp.log | cut -d, -f6 | cut -d: -f2)
+      #       echo "IMAGE_ID=$IMAGE_ID"
+      #       echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+      #       echo "Sharing GCP image $IMAGE_ID with DEMO default service account"
+      #       gcloud compute images add-iam-policy-binding "$IMAGE_ID" \
+      #         --project "${{ secrets.GCP_PROJECT }}" \
+      #         --member="serviceAccount:${{ secrets.DEMO_GCP_SERVICE_ACCOUNT }}" \
+      #         --role="roles/compute.imageUser"
+      #     ) &
+          
+      #     # Run AWS build and share in background
+      #     (
+      #       packer build -machine-readable -var-file=packer/custom.pkrvars.hcl packer/amazon-custom-packer.pkr.hcl | tee packer_output_aws.log
+      #       AMI_ID=$(grep 'artifact,0,id' packer_output_aws.log | cut -d, -f6 | cut -d: -f2)
+      #       echo "AMI_ID=$AMI_ID"
+      #       echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+      #       echo "Sharing AMI $AMI_ID with DEMO account"
+      #       aws ec2 modify-image-attribute \
+      #         --image-id "$AMI_ID" \
+      #         --launch-permission "Add=[{UserId=${{ secrets.DEMO_AWS_ACCOUNT_ID }} }]"
+      #     ) &
+          
+      #     wait
 
 ## name: Packer Build
 
