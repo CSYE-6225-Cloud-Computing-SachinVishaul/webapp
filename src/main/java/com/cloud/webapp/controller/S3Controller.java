@@ -20,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cloud.webapp.model.File;
 import com.cloud.webapp.service.FileService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.web.bind.annotation.RestController;
 
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -45,6 +47,10 @@ public class S3Controller {
     
     @Autowired
     FileService fileService;
+    private boolean hasExtraQueryParams(HttpServletRequest request) {
+        // For endpoints that expect no query parameters, the parameter map must be empty.
+        return request.getParameterMap() != null && !request.getParameterMap().isEmpty();
+    }
 
     public S3Controller(@Value("${aws.s3.bucket}") String bucketName,
                         @Value("${aws.region}") String region) {
@@ -57,7 +63,10 @@ public class S3Controller {
 
     // Endpoint to list all objects in the bucket
     @GetMapping("/list")
-    public ResponseEntity<List<String>> listObjects() {
+    public ResponseEntity<List<String>> listObjects(HttpServletRequest request) {
+    	if (hasExtraQueryParams(request)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         try {
             ListObjectsRequest listReq = ListObjectsRequest.builder()
                     .bucket(bucketName)
@@ -74,8 +83,20 @@ public class S3Controller {
     }
     
     @PostMapping
-    public ResponseEntity<?> uploadFile(@RequestParam("profilePic") MultipartFile file) {
-        try {
+    public ResponseEntity<?> uploadFile(@RequestParam("profilePic") MultipartFile file, HttpServletRequest request) {
+    	try {
+            // For a multipart request, we expect no query parameters.
+            if (hasExtraQueryParams(request)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+            // Optionally, check that only one part (the "profilePic") is present.
+            if (request.getParts() != null && request.getParts().size() != 1) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    	try {
             File savedFile = fileService.uploadFile(file);
             Map<String, String> response = new HashMap<>();
             response.put("file_name", savedFile.getFileName());
@@ -96,7 +117,10 @@ public class S3Controller {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getFile(@PathVariable("id") String id) {
+    public ResponseEntity<?> getFile(@PathVariable("id") String id,HttpServletRequest request) {
+    	if (hasExtraQueryParams(request)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         File fileEntity = fileService.getFileById(id);
         if (fileEntity == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -112,7 +136,10 @@ public class S3Controller {
 
  // For POST requests on /v1/file/{id} which are not allowed
     @RequestMapping(path = "/{id}", method = RequestMethod.POST)
-    public ResponseEntity<Void> postNotAllowedWithId(@PathVariable("id") String id) {
+    public ResponseEntity<Void> postNotAllowedWithId(@PathVariable("id") String id, HttpServletRequest request) {
+    	if (hasExtraQueryParams(request)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
@@ -124,7 +151,10 @@ public class S3Controller {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteFile(@PathVariable("id") String id) {
+    public ResponseEntity<?> deleteFile(@PathVariable("id") String id,HttpServletRequest request) {
+    	if (hasExtraQueryParams(request)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         boolean deleted = fileService.deleteFile(id);
         if (!deleted) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -134,13 +164,19 @@ public class S3Controller {
 
     
     @RequestMapping(method = { RequestMethod.HEAD, RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.OPTIONS })
-    public ResponseEntity<Void> methodNotAllowed() {
+    public ResponseEntity<Void> methodNotAllowed(HttpServletRequest request) {
+    	if (hasExtraQueryParams(request)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     // Return 405 Method Not Allowed (no JSON) for HEAD, PUT, PATCH, OPTIONS on /v1/file/{id}
     @RequestMapping(path = "/{id}", method = { RequestMethod.HEAD, RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.OPTIONS })
-    public ResponseEntity<Void> methodNotAllowedWithId(@PathVariable("id") String id) {
+    public ResponseEntity<Void> methodNotAllowedWithId(@PathVariable("id") String id,HttpServletRequest request) {
+    	if (hasExtraQueryParams(request)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 

@@ -223,7 +223,7 @@ build {
       "echo 'User=csye6225' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'EnvironmentFile=/opt/csye6225/.env' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'WorkingDirectory=/opt/csye6225' | sudo tee -a /etc/systemd/system/myapp.service",
-      "echo 'ExecStart=/usr/bin/java -Dspring.profiles.active=${var.spring_profiles_active} -Daws.accessKeyId=${var.aws_access_key_id} -Daws.secretAccessKey=${var.aws_secret_access_key} -jar /opt/csye6225/webapp-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/myapp.service",
+      "echo 'ExecStart=/usr/bin/java -Dspring.profiles.active=${var.spring_profiles_active} -jar /opt/csye6225/webapp-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'Restart=on-failure' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/myapp.service",
@@ -232,3 +232,5 @@ build {
     ]
   }
 }
+
+# -Daws.accessKeyId=${var.aws_access_key_id} -Daws.secretAccessKey=${var.aws_secret_access_key}
