@@ -1,6 +1,6 @@
 # Cloud Native Web Application
 
-This repository contains a cloud-native web application built as part of the CSYE6225 course. The application provides RESTful APIs for user management and file uploads to AWS S3.
+This repository contains a cloud-native web application built as part of the CSYE6225 course. The application provides RESTful APIs for user management and file uploads to AWS S3 bucket.
 
 ## Architecture
 
