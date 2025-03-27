@@ -231,6 +231,7 @@ build {
       "echo 'User=csye6225' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'EnvironmentFile=/opt/csye6225/.env' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'WorkingDirectory=/opt/csye6225' | sudo tee -a /etc/systemd/system/myapp.service",
+      "echo 'ExecStartPre=/bin/sh -c \"until [ -f /opt/csye6225/.env ]; do sleep 1; done\"' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'ExecStart=/usr/bin/java -Dspring.profiles.active=${var.spring_profiles_active} -jar /opt/csye6225/webapp-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo 'Restart=on-failure' | sudo tee -a /etc/systemd/system/myapp.service",
       "echo '[Install]' | sudo tee -a /etc/systemd/system/myapp.service",
