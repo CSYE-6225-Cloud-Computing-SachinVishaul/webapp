@@ -215,12 +215,12 @@ build {
   }
 
   # Create the /var/log/webapp directory for logging
-provisioner "shell" {
-  inline = [
-    "sudo mkdir -p /var/log/webapp",
-    "sudo chown csye6225:csye6225 /var/log/webapp"
-  ]
-}
+  provisioner "shell" {
+    inline = [
+      "sudo mkdir -p /var/log/webapp",
+      "sudo chown csye6225:csye6225 /var/log/webapp"
+    ]
+  }
 
   # Create a systemd service to launch your application using the JAR and load environment variables from config.sh
   provisioner "shell" {
@@ -240,7 +240,7 @@ provisioner "shell" {
     ]
   }
 
-   # *** New: Copy CloudWatch configuration file ***
+  # *** New: Copy CloudWatch configuration file ***
   provisioner "file" {
     source      = "../cloudwatch/cloudwatch-config.json"
     destination = "/tmp/cloudwatch-config.json"
@@ -248,21 +248,21 @@ provisioner "shell" {
 
   # Move to /opt/csye6225 as root
   provisioner "shell" {
-  inline = [
-    "sudo mv /tmp/cloudwatch-config.json /opt/csye6225/cloudwatch-config.json",
-    "sudo chown root:root /opt/csye6225/cloudwatch-config.json",
-    "sudo chmod 644 /opt/csye6225/cloudwatch-config.json"
+    inline = [
+      "sudo mv /tmp/cloudwatch-config.json /opt/csye6225/cloudwatch-config.json",
+      "sudo chown root:root /opt/csye6225/cloudwatch-config.json",
+      "sudo chmod 644 /opt/csye6225/cloudwatch-config.json"
     ]
   }
 
-   # *** New: Install and start the CloudWatch Agent ***
+  # *** New: Install and start the CloudWatch Agent ***
   provisioner "shell" {
     inline = [
       "sudo apt-get update",
       "sudo apt-get install -y wget",
-"wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
-"sudo dpkg -i amazon-cloudwatch-agent.deb",
-"sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/csye6225/cloudwatch-config.json -s"
+      "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
+      "sudo dpkg -i amazon-cloudwatch-agent.deb",
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/csye6225/cloudwatch-config.json -s"
     ]
   }
 }
