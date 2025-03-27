@@ -242,7 +242,7 @@ build {
 
   # *** New: Copy CloudWatch configuration file ***
   provisioner "file" {
-    source      = "../cloudwatch/cloudwatch-config.json"
+    source      = "cloudwatch/cloudwatch-config.json"
     destination = "/tmp/cloudwatch-config.json"
   }
 
