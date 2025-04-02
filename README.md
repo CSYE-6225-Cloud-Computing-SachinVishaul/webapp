@@ -19,7 +19,7 @@ Key functionality:
 
 ## Infrastructure
 
-Infrastructure components managed by Terraform:
+Infrastructure components managed by Terraform: 
 - EC2 instances with application security group
 - RDS instance in private subnet with database security group
 - S3 bucket with encryption and lifecycle policies
