@@ -19,7 +19,7 @@ import io.micrometer.core.instrument.Timer;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping({"/healthz","/cicd"})
+@RequestMapping("/healthz")
 class HealthController {
 	private static final Logger logger = LoggerFactory.getLogger(HealthController.class);
     @Autowired
